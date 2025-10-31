@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Eye, EyeOff, Lock, Mail, Shield, ArrowLeft } from 'lucide-react'
 import { toast } from 'sonner'
-import { payloadUserService } from '@/lib/payload-user-service'
+import { login } from '@/lib/api'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,15 +35,17 @@ export default function AdminLoginPage() {
         return
       }
 
-      // Tentative de connexion
-      const response = await payloadUserService.login({
+      // Tentative de connexion via l'API backend
+      const response = await login({
         email: formData.email,
         password: formData.password,
       })
 
-      if (response.user && response.token) {
-        // Stocker le token
-        localStorage.setItem('auth_token', response.token)
+      if (response.user) {
+        // Stocker le token si fourni
+        if (response.token) {
+          localStorage.setItem('auth_token', response.token)
+        }
 
         toast.success('Connexion réussie !')
 

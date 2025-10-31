@@ -8,14 +8,6 @@ export * from './common'
 // Types utilisateurs et permissions (re-exports depuis common)
 export { PERMISSIONS, hasRole } from './users'
 
-// Types Payload CMS (exports sélectifs pour éviter conflits)
-export type {
-  FormationPersonnalisee,
-  FormationPersonnaliseeFormData,
-  FormationPersonnaliseeFormProps,
-  Media,
-} from './payload'
-
 // Types utilitaires
 export * from './utils'
 

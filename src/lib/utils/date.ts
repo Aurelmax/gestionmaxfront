@@ -51,7 +51,7 @@ export function safeISOString(value: unknown): string {
 export function safeDateString(value: unknown): string {
   const date = safeDate(value)
   try {
-    return date.toISOString().split('T')[0]
+    return date.toISOString().split('T')[0] || ''
   } catch {
     return ''
   }

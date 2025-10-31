@@ -15,17 +15,21 @@ const nextConfig: NextConfig = {
   },
   // Désactiver React strict mode pour éviter les doubles rendus
   reactStrictMode: false,
-  // Images - Configuration pour le backend distant
+  // Images - Configuration pour le backend Payload CMS distant (port 4200)
   images: {
     remotePatterns: [
       {
         protocol: 'http',
         hostname: 'localhost',
-        port: '3000',
+        port: '4200',
       },
       {
         protocol: 'https',
         hostname: '*.railway.app',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.hetzner.cloud',
       },
     ],
   },

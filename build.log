@@ -1,0 +1,50 @@
+
+> gestionmax-frontend@0.1.0 build
+> next build
+
+ ⚠ You are using a non-standard "NODE_ENV" value in your environment. This creates inconsistencies in the project and is strongly advised against. Read more: https://nextjs.org/docs/messages/non-standard-node-env
+   ▲ Next.js 15.5.6
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · serverActions
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./src/app/(app)/dashboard/login/page.tsx
+Module not found: Can't resolve '@/lib/payload-user-service'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./src/components/admin/UserCredentials.tsx
+Module not found: Can't resolve '@/lib/payload-user-service'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/components/admin/UserManagementSimple.tsx
+./src/app/(app)/dashboard/utilisateurs/page.tsx
+
+./src/components/admin/UserManagementSimple.tsx
+Module not found: Can't resolve '@/lib/payload-user-service'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/(app)/dashboard/utilisateurs/page.tsx
+
+./src/hooks/useApiService.ts
+Module not found: Can't resolve '@/lib/payload-user-service'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./src/app/(app)/dashboard/page.tsx
+
+./src/app/api/[...slug]/route.ts
+Module not found: Can't resolve '@payload-config'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors

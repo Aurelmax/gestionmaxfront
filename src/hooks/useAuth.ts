@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { User, Permission, hasPermission, isUserActive } from '@/types/common'
-import { useUserService } from '@/hooks/useApiService'
+import * as API from '@/lib/api'
 
 interface AuthState {
   user: User | null
@@ -22,7 +22,6 @@ interface AuthActions {
 }
 
 export function useAuth(): AuthState & AuthActions {
-  const { service: userService } = useUserService()
   const [state, setState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
@@ -34,33 +33,13 @@ export function useAuth(): AuthState & AuthActions {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // En production, vérifier le token stocké
-        let token = localStorage.getItem('auth_token')
-
-        // Pour le développement, créer un token par défaut si aucun n'existe
-        if (!token) {
-          token = 'dev_token_admin'
-          localStorage.setItem('auth_token', token)
-        }
+        // Vérifier si un token existe
+        const token = localStorage.getItem('auth_token')
 
         if (token) {
-          // Gérer le token de debug
-          if (token === 'debug_token_admin') {
-            const user = await userService.getUserByEmail('aurelien@gestionmax.fr')
-            if (user) {
-              setState({
-                user,
-                isAuthenticated: true,
-                isLoading: false,
-                error: null,
-              })
-              return
-            }
-          }
+          // Récupérer l'utilisateur courant via l'API backend
+          const user = await API.getCurrentUser()
 
-          // Décoder le token et récupérer l'utilisateur
-          // Pour le moment, utiliser l'utilisateur réel
-          const user = await userService.getUserByEmail('aurelien@gestionmax.fr')
           if (user && isUserActive(user)) {
             setState({
               user,
@@ -86,6 +65,8 @@ export function useAuth(): AuthState & AuthActions {
           })
         }
       } catch (error) {
+        console.error('Erreur lors de l\'initialisation:', error)
+        localStorage.removeItem('auth_token')
         setState({
           user: null,
           isAuthenticated: false,
@@ -96,51 +77,56 @@ export function useAuth(): AuthState & AuthActions {
     }
 
     initializeAuth()
-  }, [userService])
+  }, [])
 
   // Fonction de connexion
-  const login = useCallback(
-    async (email: string, password: string) => {
-      setState(prev => ({ ...prev, isLoading: true, error: null }))
+  const login = useCallback(async (email: string, password: string) => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }))
 
-      try {
-        // Pour l'instant, utiliser une authentification simplifiée
-        const user = await userService.getUserByEmail(email)
+    try {
+      // Appeler l'API de connexion du backend
+      const response = await API.login({ email, password })
 
-        if (user && user.password === password) {
-          // Stocker le token
-          const token = `token_${user.id}_${Date.now()}`
-          localStorage.setItem('auth_token', token)
-
-          setState({
-            user,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null,
-          })
-        } else {
-          throw new Error('Email ou mot de passe incorrect')
+      if (response.user) {
+        // Stocker le token si fourni
+        if (response.token) {
+          localStorage.setItem('auth_token', response.token)
         }
-      } catch (error) {
+
         setState({
-          user: null,
-          isAuthenticated: false,
+          user: response.user,
+          isAuthenticated: true,
           isLoading: false,
-          error: error instanceof Error ? error.message : 'Erreur de connexion',
+          error: null,
         })
+      } else {
+        throw new Error('Email ou mot de passe incorrect')
       }
-    },
-    [userService]
-  )
+    } catch (error) {
+      setState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Erreur de connexion',
+      })
+      throw error
+    }
+  }, [])
 
   // Fonction de déconnexion
-  const logout = useCallback(() => {
-    console.log('🚪 Déconnexion en cours...')
+  const logout = useCallback(async () => {
+    console.log('Déconnexion en cours...')
+
+    try {
+      // Appeler l'API de déconnexion du backend
+      await API.logout()
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error)
+    }
 
     // Supprimer tous les tokens et données d'authentification
     localStorage.removeItem('auth_token')
     localStorage.removeItem('refresh_token')
-    localStorage.removeItem('debug_mode')
 
     // Réinitialiser l'état
     setState({
@@ -150,9 +136,9 @@ export function useAuth(): AuthState & AuthActions {
       error: null,
     })
 
-    console.log('✅ Déconnexion terminée')
+    console.log('Déconnexion terminée')
 
-    // Rediriger vers la page de login du dashboard
+    // Rediriger vers la page de login
     if (typeof window !== 'undefined') {
       window.location.href = '/dashboard/login'
     }
@@ -182,14 +168,14 @@ export function useAuth(): AuthState & AuthActions {
     if (!state.user) return
 
     try {
-      const updatedUser = await userService.getUserById(state.user.id)
+      const updatedUser = await API.getCurrentUser()
       if (updatedUser) {
         setState(prev => ({ ...prev, user: updatedUser }))
       }
     } catch (error) {
       console.error("Erreur lors du rafraîchissement de l'utilisateur:", error)
     }
-  }, [state.user, userService])
+  }, [state.user])
 
   return {
     ...state,

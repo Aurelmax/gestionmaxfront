@@ -3,18 +3,26 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, BookOpen, Calendar, TrendingUp } from 'lucide-react'
-import { useMainService } from '@/hooks/useApiService'
 
 export default function AdminDashboard() {
-  const { service } = useMainService()
   const [stats, setStats] = useState<Record<string, unknown> | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const data = await service.getStats()
-        setStats(data)
+        // TODO: Implémenter l'endpoint /api/stats dans le backend
+        // const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/stats`)
+        // const data = await response.json()
+        // setStats(data)
+
+        // Données de démo pour l'instant
+        setStats({
+          apprenants: 0,
+          programmes: 0,
+          rendezvous: 0,
+          contacts: 0
+        })
       } catch (error) {
         console.error('Erreur lors du chargement des statistiques:', error)
       } finally {
@@ -22,7 +30,7 @@ export default function AdminDashboard() {
       }
     }
     loadStats()
-  }, [service])
+  }, [])
 
   const cards = [
     {

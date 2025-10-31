@@ -8,8 +8,6 @@ import { Input } from '@/components/ui/input'
 import { PublicLayout } from '@/components/layouts/public/PublicLayout'
 import { FormationCard } from '@/components/shared/FormationCard'
 import { ModernFAQ } from '@/components/shared/ModernFAQ'
-import { SchemaMarkup } from '@/components/seo/SchemaMarkup'
-import { organizationSchema, localBusinessSchema, faqPageSchema } from '@/lib/seo/schemas'
 import {
   ArrowRight,
   BookOpen,
@@ -106,7 +104,6 @@ export default function HomePage() {
   return (
     <PublicLayout>
       {/* Schema Markup pour le SEO */}
-      <SchemaMarkup schema={[organizationSchema, localBusinessSchema, faqPageSchema]} />
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-blue-900 to-blue-800 text-white py-20 overflow-hidden">
