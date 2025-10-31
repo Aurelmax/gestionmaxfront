@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Programmes</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .programme {
+        border: 1px solid #ccc;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      .actions {
+        margin-top: 10px;
+      }
+      button {
+        margin: 5px;
+        padding: 8px 16px;
+      }
+      .voir {
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 3px;
+      }
+      .modifier {
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 3px;
+      }
+      .supprimer {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 3px;
+      }
+      .pdf {
+        background: #6f42c1;
+        color: white;
+        border: none;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Test des Programmes</h1>
+    <button onclick="loadProgrammes()">Charger les programmes</button>
+    <button onclick="testAuth()">Tester l'authentification</button>
+    <div id="result"></div>
+    <div id="programmes"></div>
+
+    <script>
+      async function testAuth() {
+        try {
+          // Simuler une connexion en créant un utilisateur dans localStorage
+          const mockUser = {
+            id: '1',
+            name: 'Admin Test',
+            email: 'admin@test.com',
+            role: 'admin',
+            permissions: ['read', 'write', 'delete'],
+          }
+
+          localStorage.setItem('user', JSON.stringify(mockUser))
+          localStorage.setItem('debug_mode', 'true')
+
+          document.getElementById('result').innerHTML =
+            '<p style="color: green;">✅ Utilisateur connecté en mode debug</p>'
+
+          // Rediriger vers les programmes
+          setTimeout(() => {
+            window.location.href = '/admin/programmes?debug=true'
+          }, 1000)
+        } catch (error) {
+          document.getElementById('result').innerHTML =
+            '<p style="color: red;">Erreur: ' + error.message + '</p>'
+        }
+      }
+
+      async function loadProgrammes() {
+        try {
+          const response = await fetch('/api/programmes')
+          const result = await response.json()
+
+          if (result.success) {
+            displayProgrammes(result.data)
+          } else {
+            document.getElementById('result').innerHTML =
+              '<p style="color: red;">Erreur API: ' + result.error + '</p>'
+          }
+        } catch (error) {
+          document.getElementById('result').innerHTML =
+            '<p style="color: red;">Erreur: ' + error.message + '</p>'
+        }
+      }
+
+      function displayProgrammes(programmes) {
+        const container = document.getElementById('programmes')
+        container.innerHTML = '<h2>Programmes trouvés (' + programmes.length + ')</h2>'
+
+        programmes.forEach(programme => {
+          const div = document.createElement('div')
+          div.className = 'programme'
+          div.innerHTML = `
+                    <h3>${programme.titre}</h3>
+                    <p><strong>Code:</strong> ${programme.codeFormation}</p>
+                    <p><strong>Durée:</strong> ${programme.duree}h</p>
+                    <p><strong>Prix:</strong> ${programme.prix}€</p>
+                    <p><strong>Statut:</strong> ${programme.statut}</p>
+                    <p><strong>Description:</strong> ${programme.description.substring(0, 200)}...</p>
+                    <div class="actions">
+                        <button class="voir" onclick="voirProgramme('${programme._id}')">Voir</button>
+                        <button class="modifier" onclick="modifierProgramme('${programme._id}')">Modifier</button>
+                        <button class="supprimer" onclick="supprimerProgramme('${programme._id}', '${programme.titre}')">Supprimer</button>
+                        <button class="pdf" onclick="telechargerPDF('${programme._id}', '${programme.titre}')">PDF</button>
+                    </div>
+                `
+          container.appendChild(div)
+        })
+      }
+
+      function voirProgramme(id) {
+        window.open('/admin/programmes/' + id + '?debug=true', '_blank')
+      }
+
+      function modifierProgramme(id) {
+        window.open('/admin/programmes/' + id + '/edit?debug=true', '_blank')
+      }
+
+      async function supprimerProgramme(id, titre) {
+        if (confirm('Êtes-vous sûr de vouloir supprimer le programme "' + titre + '" ?')) {
+          try {
+            const response = await fetch('/api/programmes/' + id, {
+              method: 'DELETE',
+            })
+
+            const result = await response.json()
+
+            if (result.success) {
+              alert('Programme supprimé avec succès !')
+              loadProgrammes() // Recharger la liste
+            } else {
+              alert('Erreur: ' + result.error)
+            }
+          } catch (error) {
+            alert('Erreur: ' + error.message)
+          }
+        }
+      }
+
+      async function telechargerPDF(id, titre) {
+        try {
+          const response = await fetch('/api/programmes/' + id + '/pdf')
+
+          if (response.ok) {
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = titre.replace(/[^a-zA-Z0-9]/g, '_') + '.html'
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+          } else {
+            alert('Erreur lors de la génération du PDF')
+          }
+        } catch (error) {
+          alert('Erreur: ' + error.message)
+        }
+      }
+
+      // Charger automatiquement les programmes au chargement de la page
+      window.onload = function () {
+        loadProgrammes()
+      }
+    </script>
+  </body>
+</html>
