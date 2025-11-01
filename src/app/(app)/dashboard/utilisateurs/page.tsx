@@ -31,6 +31,7 @@ import {
   getCurrentUser,
 } from '@/lib/api'
 import type { User as UserType } from '@/lib/api'
+import type { UserRole } from '@/types/common'
 import { toast } from 'sonner'
 import { formatDate } from '@/lib/utils'
 
@@ -399,7 +400,7 @@ export default function UsersManagementPage() {
                 className="w-full rounded-md border border-input bg-background px-3 py-2"
                 value={selectedUser?.role || 'APPRENANT'}
                 onChange={(e) =>
-                  setSelectedUser((prev) => (prev ? { ...prev, role: e.target.value } : null))
+                  setSelectedUser((prev) => (prev ? { ...prev, role: e.target.value as UserRole } : null))
                 }
               >
                 <option value="APPRENANT">Apprenant</option>

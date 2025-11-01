@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
-import { Toaster } from '@/components/ui/Toaster'
+
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
 
 export const metadata: Metadata = {
   title: {
@@ -72,21 +73,5 @@ export default function AppLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const plausibleDomain = process.env['NEXT_PUBLIC_PLAUSIBLE_DOMAIN'] || 'gestionmax.fr'
-
-  return (
-    <>
-      <Script
-        defer
-        data-domain={plausibleDomain}
-        src="https://plausible.io/js/pa-foXNNP06JJpbUKtH5aIuV.js"
-        strategy="beforeInteractive"
-      />
-      <Script id="plausible-init" strategy="beforeInteractive">
-        {`window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }`}
-      </Script>
-      <Toaster />
-      {children}
-    </>
-  )
+  return <>{children}</>
 }
