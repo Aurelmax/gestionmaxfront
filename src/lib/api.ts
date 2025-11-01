@@ -252,6 +252,51 @@ export async function getCurrentUser(): Promise<User> {
 }
 
 /**
+ * USERS MANAGEMENT
+ */
+export async function fetchUsers(options?: FetchOptions): Promise<PaginatedResponse<User>> {
+  const params = new URLSearchParams();
+  if (options?.limit) params.append('limit', String(options.limit));
+  if (options?.page) params.append('page', String(options.page));
+  if (options?.sort) params.append('sort', options.sort);
+
+  const query = params.toString() ? `?${params.toString()}` : '';
+  return apiFetch<PaginatedResponse<User>>(`/users${query}`, {
+    cache: 'no-store',
+    credentials: 'include',
+  });
+}
+
+export async function fetchUserById(id: string): Promise<User> {
+  return apiFetch<User>(`/users/${id}`, {
+    credentials: 'include',
+  });
+}
+
+export async function createUser(data: Partial<User> & { password: string }): Promise<User> {
+  return apiFetch<User>('/users', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    credentials: 'include',
+  });
+}
+
+export async function updateUser(id: string, data: Partial<User>): Promise<User> {
+  return apiFetch<User>(`/users/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+    credentials: 'include',
+  });
+}
+
+export async function deleteUser(id: string): Promise<void> {
+  return apiFetch<void>(`/users/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+}
+
+/**
  * HEALTH CHECK
  */
 export async function checkBackendHealth(): Promise<{ status: string; message?: string }> {
