@@ -73,6 +73,7 @@ interface FetchOptions {
 
 /**
  * Fonction générique de fetch avec gestion d'erreurs
+ * ⚠️ IMPORTANT: credentials: 'include' est OBLIGATOIRE pour envoyer les cookies d'authentification
  */
 async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_URL}${endpoint}`;
@@ -80,6 +81,7 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
   try {
     const res = await fetch(url, {
       ...options,
+      credentials: 'include', // ⚠️ CRITIQUE: envoie et reçoit les cookies
       headers: {
         'Content-Type': 'application/json',
         ...options?.headers,
@@ -87,6 +89,9 @@ async function apiFetch<T>(endpoint: string, options?: RequestInit): Promise<T> 
     });
 
     if (!res.ok) {
+      if (res.status === 403 || res.status === 401) {
+        throw new Error('Non authentifié - Veuillez vous connecter');
+      }
       throw new Error(`API Error: ${res.status} ${res.statusText}`);
     }
 
@@ -249,6 +254,34 @@ export async function getCurrentUser(): Promise<User> {
   return apiFetch<User>('/users/me', {
     credentials: 'include',
   });
+}
+
+/**
+ * Vérifie si un email existe déjà dans la base de données
+ */
+export async function checkEmailExists(email: string): Promise<{ exists: boolean; needsAuth: boolean }> {
+  try {
+    const response = await fetch(
+      `${API_URL}/users?where[email][equals]=${encodeURIComponent(email)}`,
+      {
+        credentials: 'include', // ⚠️ CRITIQUE
+      }
+    );
+
+    if (response.status === 403 || response.status === 401) {
+      return { exists: false, needsAuth: true };
+    }
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return { exists: data.totalDocs > 0, needsAuth: false };
+  } catch (error) {
+    console.error('Erreur lors de la vérification de l\'email:', error);
+    return { exists: false, needsAuth: true };
+  }
 }
 
 /**
