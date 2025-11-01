@@ -1,11 +1,17 @@
 /**
- * API Layer - Communication avec le backend Payload CMS
+ * API Layer - Communication avec le backend Payload CMS en mode Headless
  * Le frontend est totalement autonome et communique via REST API
+ *
+ * Configuration:
+ * - Développement: http://localhost:3002/api (défini dans .env.local)
+ * - Production: https://gestionmaxback-production.up.railway.app/api
+ *
+ * ⚠️ IMPORTANT: Toutes les requêtes utilisent credentials: 'include' pour les cookies JWT
  */
 
 import type { User as CommonUser } from '@/types/common';
 
-export const API_URL = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:4200/api';
+export const API_URL = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002/api';
 
 // Utiliser le type User de common pour la cohérence
 export type User = CommonUser;
